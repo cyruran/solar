@@ -1,5 +1,6 @@
 <html>
   <head>
+    <meta charset="UTF-8">
     <style>
       @media screen and (max-width: 1000px) {
           #clock {
@@ -56,7 +57,7 @@
       <g id="solar-clock">
         <circle r="68" fill="none" stroke="#ff9900" stroke-dasharray="2 2" opacity="0.3" />
       </g>
-      <g id="horae-temporalis">
+      <g id="horae-temporales">
         <circle r="47" fill="none" stroke="#ff9900" stroke-dasharray="2 2" opacity="0.3" />
       </g>
 
@@ -73,113 +74,23 @@
     <script src="suncalc.js"></script>
     <script src="scr.js"></script>
     <script src="render.js"></script>
+    <script src="byz.js"></script>
+    <script src="clock.js"></script>
     <script>
       const search = new URLSearchParams(window.location.search);
       const lat = parseFloat(search.get("lat")); // 59.866350;
       const long = parseFloat(search.get("long")); // 30.364781;
-      let skew;
-
-      function clock() {
-          document.getElementById("local-clock").setAttribute("transform", `rotate(-${skew})`);
-
-          renderClock('local-clock', 78, 'local-text');
-          renderClock('solar-clock', 53, 'solar-text');
-
-          setHand();
-          setInterval(setHand, 30000);
-
-          addSector(0, 8, "blue")
-          addSector(8.5, 1, "orange");
-          addSector(12.5, 1, "orange");
-          addSector(16.5, 1, "orange");
-          addSector(20.5, 1, "orange");
-
-          const tms = SunCalc.getTimes(new Date(), lat, long);
-          const sunriseMin = toMinutes.apply(null, dateToHM(tms.sunrise));
-          const sunriseAngle = localToAngle(sunriseMin);
-          const sunsetMin = toMinutes.apply(null, dateToHM(tms.sunset));
-          const sunsetAngle = localToAngle(sunsetMin);
-
-          const dayLength = sunsetMin - sunriseMin;
-          $e("sun").innerHTML = `
-       <use href="#sunline" transform="rotate(${sunriseAngle})"/>
-       <use href="#sunline" transform="rotate(${localToAngle(sunsetMin)})"/>
-       <use href="#nightline" transform="rotate(${localToAngle(toMinutes.apply(null, dateToHM(tms.night)))})"/>
-       <use href="#nightline" transform="rotate(${localToAngle(toMinutes.apply(null, dateToHM(tms.nightEnd)))})"/>
-       `//  + `
-          // <use href="#twiline" transform="rotate(${localToAngle(toMinutes.apply(null, dateToHM(tms.dusk)))})"/>
-          // <use href="#twiline" transform="rotate(${localToAngle(toMinutes.apply(null, dateToHM(tms.dawn)))})"/>
-          // `
-          ;
-          const dayHour = dayLength / 12;
-          const nightHour = (24 * 60 - dayLength) / 12;
-          // renderClock("horae-temporalis", 27, 'mark-xsmall', 'solar-text', 12, sunriseAngle, sunsetAngle - sunriseAngle);
-
-          function toGreek(x) {
-              const greekNumbers = {
-                  0: "",
-                  1: "α", 2: "β", 3: "γ", 4: "δ", 5: "ε",
-                  6: "ϛ", 7: "ζ", 8: "η", 9: "θ", 10: "ι",
-                  20: "κ", 30: "λ", 40: "μ", 50: "ν",
-              };
-
-              let middle = "";
-              let last = "";
-              if (x > 10 && x % 10)
-                  middle = "\u{035E}";
-              else
-                  last = "\u{0304}";
-              return greekNumbers[Math.trunc(x / 10) * 10] + middle + greekNumbers[x % 10] + last;
-          }
-
-          const r = 37;
-          renderClock("horae-temporalis", r, 'temporal-text', 12, sunriseAngle, sunsetAngle - sunriseAngle, numbers=[null, "Α", "Β", "Γ", "Δ", "Ε", "Ϛ", "Ζ", "Η", "Θ", "Ι", "ΙΑ", "ΙΒ",], getTextCoords = calcTextBetween);
-          renderClock("horae-temporalis", r, 'temporal-text', 12, sunsetAngle, 360 - (sunsetAngle - sunriseAngle), numbers=[null, "Α", "Β", "Γ", "Δ", "Ε", "Ϛ", "Ζ", "Η", "Θ", "Ι", "ΙΑ", "ΙΒ",], getTextCoords = calcTextBetween);
-          $e("dayhourlen").textContent = dayHour.toFixed(2);
-          $e("nighthourlen").textContent = nightHour.toFixed(2);
-
-          function fmt(x) {
-              return String(x).padStart(2, "0");
-          }
-
-          function tfmt(h, m) {
-              return `${fmt(h)}:${fmt(m)}`;
-          }
-
-          function updTime() {
-              const d = new Date();
-              const h = d.getHours();
-              const m = d.getMinutes();
-              $e("local-time").textContent = tfmt(h, m);
-              const solar = localToSolar(h, m);
-              const [sh, sm] = fromMinutes(solar < 0 ? 24 * 60 + solar : solar);
-              $e("solar-time").textContent = tfmt(sh, sm);
-
-              const mins = toMinutes(h, m);
-              let byz;
-              let night = false;
-              if (mins > sunriseMin && mins < sunsetMin) {
-                  byz = (mins - sunriseMin) / (sunsetMin - sunriseMin) * 12 * 60;
-              }
-              else {
-                  let diff = mins - sunsetMin
-                  if (diff < 0) {
-                      diff = 24 * 60 + diff;
-                  }
-                  byz = diff / (24 * 60 - (sunsetMin - sunriseMin)) * 12 * 60;
-                  night = true;
-              }
-              let [bh, bm] = fromMinutes(byz);
-              $e("byzantine-time").textContent = `ὥρα ${toGreek(bh+1)} καὶ λεπτά ${toGreek(bm+1)} τῆς ${night ? "νυκτός" : "ἡμέρας"}`;
-              $e("byzantine-time").title = tfmt(bh, bm);
-          }
-          setInterval(updTime, 2000);
-          updTime();
-      }
+      let skew, bt, tms, sunriseMin, sunsetMin;
 
       if (lat && long) {
           skew = -(longitude + new Date().getTimezoneOffset() - equationOfTime()) / 24 / 60 * 360;
-          clock();
+          tms = SunCalc.getTimes(new Date(), lat, long);
+
+          sunriseMin = toMinutes.apply(null, dateToHM(tms.sunrise));
+          sunsetMin = toMinutes.apply(null, dateToHM(tms.sunset));
+
+          bt = new ByzantineTime(sunriseMin, sunsetMin);
+          clock(sunriseMin, sunsetMin, bt);
       }
       </script>
   </body>
