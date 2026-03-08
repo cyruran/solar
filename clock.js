@@ -18,9 +18,10 @@ function clock(sunriseMin, sunsetMin, bt) {
     $e("sun").innerHTML = `
        <use href="#sunline" transform="rotate(${sunriseAngle})"/>
        <use href="#sunline" transform="rotate(${localToAngle(sunsetMin)})"/>
+` + (tms.night.valueOf() ? `
        <use href="#nightline" transform="rotate(${localToAngle(toMinutes.apply(null, dateToHM(tms.night)))})"/>
        <use href="#nightline" transform="rotate(${localToAngle(toMinutes.apply(null, dateToHM(tms.nightEnd)))})"/>
-       `;
+       ` : "");
 
     const r = 37;
     renderClock("horae-temporales", r, 'temporal-text', 12, sunriseAngle, sunsetAngle - sunriseAngle, numbers=[null, "Α", "Β", "Γ", "Δ", "Ε", "Ϛ", "Ζ", "Η", "Θ", "Ι", "ΙΑ", "ΙΒ",], getTextCoords = calcTextBetween);
