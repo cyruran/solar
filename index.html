@@ -66,6 +66,7 @@
     <table>
       <tr><td>Solar</td><td id="solar-time"></td></tr>
       <tr><td>Local</td><td id="local-time"></td></tr>
+      <tr><td>Diff</td><td id="diff"></td></tr>
       <tr><td>Day hour</td><td id="dayhourlen"></td></tr>
       <tr><td>Night hour</td><td id="nighthourlen"></td></tr>
       <tr><td>Byzantine</td><td id="byzantine-time"></td></tr>
@@ -80,11 +81,14 @@
       const search = new URLSearchParams(window.location.search);
       const lat = parseFloat(search.get("lat")); // 59.866350;
       const long = parseFloat(search.get("long")); // 30.364781;
-      let skew, bt, tms, sunriseMin, sunsetMin;
+      let diff, skew, bt, tms, sunriseMin, sunsetMin;
 
       if (lat && long) {
-          skew = -(longitude + new Date().getTimezoneOffset() - equationOfTime()) / 24 / 60 * 360;
           tms = SunCalc.getTimes(new Date(), lat, long);
+          const d = new Date();
+          diff = (tms.solarNoon - new Date(`${d.toDateString()} 12:00`)) / 60000;
+          $e("diff").textContent = tfmt.apply(null, fromMinutes(diff));
+          skew = diff / 60 / 24 * 360;
 
           sunriseMin = toMinutes.apply(null, dateToHM(tms.sunrise));
           sunsetMin = toMinutes.apply(null, dateToHM(tms.sunset));

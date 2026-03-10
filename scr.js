@@ -4,13 +4,6 @@ function $e(id) {
     return document.getElementById(id);
 }
 
-function equationOfTime() {
-    const now = new Date();
-    const n = Math.trunc((now - new Date(now.getFullYear(), 0, 0)) / (1000 * 60 * 60 * 24));
-    const b = 2 * Math.PI * (n - 81) / 365;
-    return 7.53 * Math.cos(b) + 1.5 * Math.sin(b) - 9.87 * Math.sin(2 * b);
-}
-
 function toHours(h, m) {
     return h + m / 60;
 }
@@ -28,11 +21,11 @@ function fromMinutes(m) {
 }
 
 function localToSolar(h, m) {
-    return toMinutes(h, m) + new Date().getTimezoneOffset() + longitude - equationOfTime();
+    return toMinutes(h, m) - diff;
 }
 
 function solarToLocal(h, m) {
-    return toMinutes(h, m) - new Date().getTimezoneOffset() - longitude + equationOfTime()
+    return toMinutes(h, m) - diff;
 }
 
 function localToAngle(m) {
@@ -51,4 +44,13 @@ function addSector(start, duration, color) {
     sector.setAttribute("stroke-dasharray", `0 ${start} ${duration} 24`);
     sector.setAttribute("stroke", color);
     $e("sectors").appendChild(sector);
+}
+
+
+function fmt(x) {
+    return String(x).padStart(2, "0");
+}
+
+function tfmt(h, m) {
+    return `${fmt(h)}:${fmt(m)}`;
 }

@@ -29,14 +29,6 @@ function clock(sunriseMin, sunsetMin, bt) {
     $e("dayhourlen").textContent = bt.dayHour.toFixed(2);
     $e("nighthourlen").textContent = bt.nightHour.toFixed(2);
 
-    function fmt(x) {
-        return String(x).padStart(2, "0");
-    }
-
-    function tfmt(h, m) {
-        return `${fmt(h)}:${fmt(m)}`;
-    }
-
     function updTime() {
         const d = new Date();
         const h = d.getHours();
