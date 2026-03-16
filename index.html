@@ -85,8 +85,7 @@
 
       if (lat && long) {
           tms = SunCalc.getTimes(new Date(), lat, long);
-          const d = new Date();
-          diff = (tms.solarNoon - new Date(`${d.toDateString()} 12:00`)) / 60000;
+          diff = (tms.solarNoon - new Date(`${tms.solarNoon.toDateString()} 12:00`)) / 60000;
           $e("diff").textContent = tfmt.apply(null, fromMinutes(diff));
           skew = diff / 60 / 24 * 360;
 
